@@ -1,0 +1,160 @@
+{
+  "name": "Fal.ai All Models Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "falai-process",
+        "responseMode": "responseNode"
+      },
+      "id": "webhook-entry",
+      "name": "Webhook Entry",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Correct form-data access pattern based on debug results\n// Access model from the correct location\nlet model = $json.model || $json[\"model\"];\n\n// Also check if it's in body (as seen in the screenshot)\nif (!model && $json.body) {\n  model = $json.body.model;\n}\n\nlet imageBase64 = $json.image_base64 || $json[\"image_base64\"];\nlet imageUrl = $json.image_url || $json[\"image_url\"];\n\n// Enhanced binary data detection\nconst hasBinaryInput = $binary && ($binary.data || $binary.image);\n\n// Check for different binary data locations\nlet binaryData = null;\nif ($binary) {\n  // Check common binary field names\n  binaryData = $binary.data || $binary.image || $binary.file;\n  console.log('Binary data keys:', Object.keys($binary));\n  console.log('Binary data found:', !!binaryData);\n}\n\n// Debug logging\nconsole.log('Debug - Model found:', model);\nconsole.log('Debug - imageBase64:', !!imageBase64);\nconsole.log('Debug - imageUrl:', !!imageUrl);\nconsole.log('Debug - hasBinaryInput:', !!hasBinaryInput);\nconsole.log('Debug - Binary object exists:', !!$binary);\n\n// All supported models with exact endpoints\nconst modelEndpoints = {\n  \"background/remove\": \"fal-ai/bria/background/remove\",\n  \"remove-background\": \"fal-ai/bria/background/remove\",\n  \"retoucher\": \"fal-ai/retoucher\",\n  \"enhance\": \"fal-ai/retoucher\",\n  \"photo-restoration\": \"fal-ai/image-editing/photo-restoration\",\n  \"restore-photo\": \"fal-ai/image-editing/photo-restoration\",\n  \"object-removal\": \"fal-ai/object-removal\",\n  \"inpaint\": \"fal-ai/inpaint\",\n  \"clarity-upscaler\": \"fal-ai/clarity-upscaler\",\n  \"upscaler\": \"fal-ai/clarity-upscaler\",\n  \"product-shot\": \"fal-ai/bria/product-shot\",\n  \"background/replace\": \"fal-ai/bria/background/replace\",\n  \"replace-background\": \"fal-ai/bria/background/replace\"\n};\n\nif (!model || (!modelEndpoints[model] && !model.includes('fal-ai/'))) {\n  return [{\n    json: {\n      error: \"Invalid model. Supported: \" + Object.keys(modelEndpoints).join(\", \"),\n      debug_info: {\n        received_model: model,\n        json_structure: Object.keys($json),\n        has_binary: !!hasBinaryInput\n      }\n    }\n  }];\n}\n\nif (!imageBase64 && !imageUrl && !hasBinaryInput && !binaryData) {\n  return [{ \n    json: { \n      error: \"Image required (base64, URL, or binary)\",\n      debug_info: {\n        has_base64: !!imageBase64,\n        has_url: !!imageUrl,\n        has_binary_input: !!hasBinaryInput,\n        binary_object_exists: !!$binary,\n        binary_keys: $binary ? Object.keys($binary) : [],\n        binary_data_found: !!binaryData\n      }\n    } \n  }];\n}\n\nconst endpoint = modelEndpoints[model] || model;\n\n// Handle binary data with enhanced detection\nlet finalBinaryData = null;\nif (binaryData) {\n  finalBinaryData = { data: binaryData };\n} else if (hasBinaryInput) {\n  finalBinaryData = $binary;\n} else if (imageBase64) {\n  const cleanBase64 = imageBase64.replace(/^data:image\\/\\w+;base64,/, '');\n  const imageBuffer = Buffer.from(cleanBase64, \"base64\");\n  finalBinaryData = { data: { data: imageBuffer, mimeType: \"image/png\", fileName: \"input.png\" } };\n}\n\nreturn [{\n  json: {\n    model: model,\n    endpoint: endpoint,\n    image_url: imageUrl,\n    api_url: `https://queue.fal.run/${endpoint}`,\n    processed_at: new Date().toISOString(),\n    input_type: binaryData ? 'binary' : (imageBase64 ? 'base64' : 'url')\n  },\n  binary: finalBinaryData\n}];"
+      },
+      "id": "process-input",
+      "name": "Process Input",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.api_url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "falaiApi",
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={\n  \"image_url\": $json[\"image_url\"] ? $json[\"image_url\"] : 'data:image/png;base64,' + $binary.data.data.toString('base64')\n}"
+      },
+      "id": "fal-api-call",
+      "name": "Fal.ai API Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const response = $json;\nconst inputData = $('Process Input').item.json;\n\nif (response.request_id) {\n  return [{\n    json: {\n      request_id: response.request_id,\n      model: inputData.model,\n      status: 'polling',\n      poll_url: response.response_url || `https://queue.fal.run/${inputData.endpoint}/requests/${response.request_id}`,\n      poll_count: 0,\n      max_polls: 30\n    }\n  }];\n} else if (response.images || response.image || response.output) {\n  const output = response.images || response.image || response.output;\n  const resultUrl = Array.isArray(output) ? output[0]?.url : output?.url || output;\n  return [{\n    json: {\n      status: 'success',\n      model: inputData.model,\n      result_url: resultUrl,\n      completed_at: new Date().toISOString()\n    }\n  }];\n} else {\n  return [{\n    json: {\n      status: 'error',\n      error: response.error || 'Unexpected response',\n      model: inputData.model\n    }\n  }];\n}"
+      },
+      "id": "check-response",
+      "name": "Check Response",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "polling",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "check-polling",
+      "name": "Check Polling",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "seconds"
+      },
+      "id": "wait-poll",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1340, 200]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.poll_url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "falaiApi"
+      },
+      "id": "poll-status",
+      "name": "Poll Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 200]
+    },
+    {
+      "parameters": {
+        "functionCode": "const response = $json;\nconst pollData = $('Check Response').item.json;\nconst currentPollCount = (pollData.poll_count || 0) + 1;\n\nif (currentPollCount >= 30) {\n  return [{ json: { status: 'error', error: 'Polling timeout', model: pollData.model } }];\n}\n\nif (response.status === 'COMPLETED' || response.images || response.output) {\n  const output = response.images || response.output;\n  const resultUrl = Array.isArray(output) ? output[0]?.url : output?.url || output;\n  return [{\n    json: {\n      status: 'success',\n      model: pollData.model,\n      result_url: resultUrl,\n      completed_at: new Date().toISOString()\n    }\n  }];\n} else if (response.status === 'FAILED' || response.error) {\n  return [{ json: { status: 'error', error: response.error || 'Job failed', model: pollData.model } }];\n} else {\n  return [{\n    json: {\n      status: 'polling',\n      poll_url: pollData.poll_url,\n      model: pollData.model,\n      poll_count: currentPollCount,\n      max_polls: 30\n    }\n  }];\n}"
+      },
+      "id": "process-poll",
+      "name": "Process Poll",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1780, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "polling",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "still-polling",
+      "name": "Still Polling?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2000, 200]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "webhook-response",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1340, 400]
+    }
+  ],
+  "connections": {
+    "Webhook Entry": { "main": [[ { "node": "Process Input", "type": "main", "index": 0 } ]] },
+    "Process Input": { "main": [[ { "node": "Fal.ai API Call", "type": "main", "index": 0 } ]] },
+    "Fal.ai API Call": { "main": [[ { "node": "Check Response", "type": "main", "index": 0 } ]] },
+    "Check Response": { "main": [[ { "node": "Check Polling", "type": "main", "index": 0 } ]] },
+    "Check Polling": { 
+      "main": [
+        [ { "node": "Wait", "type": "main", "index": 0 } ],
+        [ { "node": "Webhook Response", "type": "main", "index": 0 } ]
+      ] 
+    },
+    "Wait": { "main": [[ { "node": "Poll Status", "type": "main", "index": 0 } ]] },
+    "Poll Status": { "main": [[ { "node": "Process Poll", "type": "main", "index": 0 } ]] },
+    "Process Poll": { "main": [[ { "node": "Still Polling?", "type": "main", "index": 0 } ]] },
+    "Still Polling?": { 
+      "main": [
+        [ { "node": "Wait", "type": "main", "index": 0 } ],
+        [ { "node": "Webhook Response", "type": "main", "index": 0 } ]
+      ] 
+    }
+  },
+  "active": false,
+  "versionId": "3"
+}

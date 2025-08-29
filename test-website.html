@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fal.ai Test Sitesi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 
+                0 30px 60px rgba(0,0,0,0.12),
+                0 20px 40px rgba(0,0,0,0.08),
+                inset 0 1px 0 rgba(255,255,255,0.6);
+            border: 1px solid rgba(255,255,255,0.2);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 50%, #1976D2 100%);
+            background-size: 200% 200%;
+            animation: headerGradient 8s ease infinite;
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: headerShine 12s linear infinite;
+        }
+
+        @keyframes headerGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes headerShine {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            padding: 30px;
+        }
+
+        .model-card {
+            border: 1px solid rgba(224, 224, 224, 0.6);
+            border-radius: 16px;
+            padding: 25px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(250, 250, 250, 0.8);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .model-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.6s;
+        }
+
+        .model-card:hover {
+            border-color: #2196F3;
+            box-shadow: 
+                0 15px 35px rgba(33, 150, 243, 0.15),
+                0 5px 15px rgba(0, 0, 0, 0.08);
+            transform: translateY(-5px) scale(1.02);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .model-card:hover::before {
+            left: 100%;
+        }
+
+        .model-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .model-description {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .example-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .example-title {
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .example-images {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .example-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .example-image:hover {
+            transform: scale(1.1);
+        }
+
+        .example-arrow {
+            font-size: 1.5em;
+            color: #2196F3;
+            margin: 0 5px;
+        }
+
+        .example-label {
+            font-size: 0.75em;
+            color: #666;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        .file-upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            margin-bottom: 15px;
+        }
+
+        .file-upload-area:hover, .file-upload-area.dragover {
+            border-color: #2196F3;
+            background: #f8f9ff;
+        }
+
+        .file-upload-area.has-file {
+            border-color: #4CAF50;
+            background: #f1f8e9;
+        }
+
+        .upload-icon {
+            font-size: 2em;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .process-btn {
+            width: 100%;
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .process-btn:hover {
+            background: linear-gradient(135deg, #45a049, #4CAF50);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .process-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .result-area {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        .result-success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 2px solid #28a745;
+            color: #155724;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
+        }
+
+        .result-error {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border: 2px solid #dc3545;
+            color: #721c24;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
+        }
+
+        .result-loading {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+            border: 2px solid #17a2b8;
+            color: #0c5460;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(23, 162, 184, 0.2);
+        }
+
+        .result-comparison {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .result-image-container {
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .result-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+            border: 3px solid rgba(255,255,255,0.8);
+        }
+
+        .result-image:hover {
+            transform: scale(1.05);
+        }
+
+        .result-arrow {
+            font-size: 2em;
+            color: #28a745;
+            margin: 0 10px;
+        }
+
+        .result-label {
+            font-weight: 600;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .result-url {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 8px;
+            word-break: break-all;
+            font-size: 0.85em;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2196F3;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .settings {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px 30px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .settings::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #007bff, transparent);
+        }
+
+        .settings h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.2em;
+        }
+
+        .webhook-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.9);
+        }
+
+        .webhook-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+            background: white;
+        }
+
+        .preview-image {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 AI Görüntü İşleme Merkezi</h1>
+            <p>Gelişmiş yapay zeka modelleri ile profesyonel görüntü işleme</p>
+        </div>
+
+        <div class="models-grid">
+            <!-- Background Remove -->
+            <div class="model-card">
+                <div class="model-title">🖼️ Arka Plan Silme</div>
+                <div class="model-description">Resimlerden arka planı otomatik olarak kaldırır ve profesyonel sonuçlar elde etmenizi sağlar</div>
+                
+                <div class="example-section">
+                    <div class="example-title">📋 Örnek Sonuç</div>
+                    <div class="example-images">
+                        <div>
+                            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23e8f4f8'/><rect x='20' y='20' width='40' height='40' fill='%234a90a4'/><text x='40' y='45' text-anchor='middle' fill='white' font-size='10'>Öncesi</text></svg>" class="example-image" alt="Before">
+                            <div class="example-label">Orijinal</div>
+                        </div>
+                        <div class="example-arrow">→</div>
+                        <div>
+                            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23f0f8e8'/><rect x='20' y='20' width='40' height='40' fill='%234caf50'/><text x='40' y='45' text-anchor='middle' fill='white' font-size='10'>Sonrası</text></svg>" class="example-image" alt="After">
+                            <div class="example-label">Arka Plan Silinmiş</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="file-upload-area" onclick="triggerFileInput('background-remove')">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">Fotoğraf Ekle<br><small>Tıklayın veya sürükleyip bırakın</small></div>
+                    <img class="preview-image" id="preview-background-remove" style="display: none;">
+                </div>
+                <input type="file" id="file-background-remove" class="file-input" accept="image/*" onchange="handleFileSelect('background-remove', this)">
+                <button class="process-btn" onclick="processImage('background/remove', 'background-remove')" disabled>İşle</button>
+                <div class="result-area" id="result-background-remove"></div>
+            </div>
+
+            <!-- Retoucher -->
+            <div class="model-card">
+                <div class="model-title">✨ Resim İyileştirme</div>
+                <div class="model-description">Resimleri profesyonel kalitede iyileştirir, netçi ve güzellik artırır</div>
+                
+                <div class="example-section">
+                    <div class="example-title">📋 Örnek Sonuç</div>
+                    <div class="example-images">
+                        <div>
+                            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23f5f5f5'/><circle cx='40' cy='40' r='20' fill='%23ccc'/><text x='40' y='45' text-anchor='middle' fill='%23666' font-size='8'>Bulanık</text></svg>" class="example-image" alt="Before">
+                            <div class="example-label">Orijinal</div>
+                        </div>
+                        <div class="example-arrow">→</div>
+                        <div>
+                            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23fff8e1'/><circle cx='40' cy='40' r='20' fill='%23ffc107'/><text x='40' y='45' text-anchor='middle' fill='white' font-size='8'>Net</text></svg>" class="example-image" alt="After">
+                            <div class="example-label">İyileştirilmiş</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="file-upload-area" onclick="triggerFileInput('retoucher')">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">Fotoğraf Ekle<br><small>Tıklayın veya sürükleyip bırakın</small></div>
+                    <img class="preview-image" id="preview-retoucher" style="display: none;">
+                </div>
+                <input type="file" id="file-retoucher" class="file-input" accept="image/*" onchange="handleFileSelect('retoucher', this)">
+                <button class="process-btn" onclick="processImage('retoucher', 'retoucher')" disabled>İşle</button>
+                <div class="result-area" id="result-retoucher"></div>
+            </div>
+
+            <!-- Photo Restoration -->
+            <div class="model-card">
+                <div class="model-title">🔧 Foto Onarma</div>
+                <div class="model-description">Eski ve hasarlı fotoğrafları onarır, çizikleri giderir ve kaliteyi artırır</div>
+                
+                <div class="example-section">
+                    <div class="example-title">📋 Örnek Sonuç</div>
+                    <div class="example-images">
+                        <div>
+                            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23f3e5ab'/><rect x='10' y='10' width='60' height='60' fill='%23d4af37' opacity='0.7'/><line x1='20' y1='30' x2='60' y2='50' stroke='%238b4513' stroke-width='2'/><text x='40' y='45' text-anchor='middle' fill='%23654321' font-size='7'>Hasarlı</text></svg>" class="example-image" alt="Before">
+                            <div class="example-label">Eski Foto</div>
+                        </div>
+                        <div class="example-arrow">→</div>
+                        <div>
+                            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23f0f8ff'/><rect x='10' y='10' width='60' height='60' fill='%234169e1'/><text x='40' y='45' text-anchor='middle' fill='white' font-size='8'>Onarılmış</text></svg>" class="example-image" alt="After">
+                            <div class="example-label">Restore Edilmiş</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="file-upload-area" onclick="triggerFileInput('photo-restoration')">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">Fotoğraf Ekle<br><small>Tıklayın veya sürükleyip bırakın</small></div>
+                    <img class="preview-image" id="preview-photo-restoration" style="display: none;">
+                </div>
+                <input type="file" id="file-photo-restoration" class="file-input" accept="image/*" onchange="handleFileSelect('photo-restoration', this)">
+                <button class="process-btn" onclick="processImage('photo-restoration', 'photo-restoration')" disabled>İşle</button>
+                <div class="result-area" id="result-photo-restoration"></div>
+            </div>
+
+            <!-- Object Removal -->
+            <div class="model-card">
+                <div class="model-title">🗑️ Nesne Silme</div>
+                <div class="model-description">Resimlerden istenmeyen nesneleri kaldırır ve arka planı doğal olarak doldurur</div>
+                
+                <div class="example-section">
+                    <div class="example-title">📋 Örnek Sonuç</div>
+                    <div class="example-images">
+                        <div>
+                            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23e8f5e8'/><rect x='30' y='30' width='20' height='20' fill='%23ff4444'/><circle cx='20' cy='20' r='8' fill='%2344ff44'/><text x='40' y='70' text-anchor='middle' fill='%23333' font-size='7'>+Nesne</text></svg>" class="example-image" alt="Before">
+                            <div class="example-label">Nesne Var</div>
+                        </div>
+                        <div class="example-arrow">→</div>
+                        <div>
+                            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23e8f5e8'/><circle cx='20' cy='20' r='8' fill='%2344ff44'/><text x='40' y='70' text-anchor='middle' fill='%23333' font-size='7'>Temiz</text></svg>" class="example-image" alt="After">
+                            <div class="example-label">Nesne Silinmiş</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="file-upload-area" onclick="triggerFileInput('object-removal')">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">Fotoğraf Ekle<br><small>Tıklayın veya sürükleyip bırakın</small></div>
+                    <img class="preview-image" id="preview-object-removal" style="display: none;">
+                </div>
+                <input type="file" id="file-object-removal" class="file-input" accept="image/*" onchange="handleFileSelect('object-removal', this)">
+                <button class="process-btn" onclick="processImage('object-removal', 'object-removal')" disabled>İşle</button>
+                <div class="result-area" id="result-object-removal"></div>
+            </div>
+
+            <!-- Inpaint -->
+            <div class="model-card">
+                <div class="model-title">🎨 Boyama/Düzeltme</div>
+                <div class="model-description">Resim üzerinde boyama ve düzeltme işlemleri yapar, eksik kısımları tamamlar</div>
+                
+                <div class="example-section">
+                    <div class="example-title">📋 Örnek Sonuç</div>
+                    <div class="example-images">
+                        <div>
+                            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23fff3e0'/><rect x='10' y='10' width='60' height='60' fill='%23ff9800'/><rect x='30' y='30' width='20' height='20' fill='white'/><text x='40' y='75' text-anchor='middle' fill='%23333' font-size='7'>Eksik</text></svg>" class="example-image" alt="Before">
+                            <div class="example-label">Eksik Alan</div>
+                        </div>
+                        <div class="example-arrow">→</div>
+                        <div>
+                            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23fff3e0'/><rect x='10' y='10' width='60' height='60' fill='%23ff9800'/><text x='40' y='75' text-anchor='middle' fill='%23333' font-size='7'>Tamamlanmış</text></svg>" class="example-image" alt="After">
+                            <div class="example-label">Doldurulmuş</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="file-upload-area" onclick="triggerFileInput('inpaint')">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">Fotoğraf Ekle<br><small>Tıklayın veya sürükleyip bırakın</small></div>
+                    <img class="preview-image" id="preview-inpaint" style="display: none;">
+                </div>
+                <input type="file" id="file-inpaint" class="file-input" accept="image/*" onchange="handleFileSelect('inpaint', this)">
+                <button class="process-btn" onclick="processImage('inpaint', 'inpaint')" disabled>İşle</button>
+                <div class="result-area" id="result-inpaint"></div>
+            </div>
+
+            <!-- Clarity Upscaler -->
+            <div class="model-card">
+                <div class="model-title">🔍 Kalite Artırma</div>
+                <div class="model-description">Düşük çözünürlüklü resimleri yüksek kalitede büyütür ve netlik ekler</div>
+                
+                <div class="example-section">
+                    <div class="example-title">📋 Örnek Sonuç</div>
+                    <div class="example-images">
+                        <div>
+                            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23ffebee'/><rect x='25' y='25' width='30' height='30' fill='%23f44336' opacity='0.6'/><text x='40' y='45' text-anchor='middle' fill='%23333' font-size='6'>Pixelli</text></svg>" class="example-image" alt="Before">
+                            <div class="example-label">Düşük Kalite</div>
+                        </div>
+                        <div class="example-arrow">→</div>
+                        <div>
+                            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23e8f5e8'/><rect x='10' y='10' width='60' height='60' fill='%234caf50'/><text x='40' y='45' text-anchor='middle' fill='white' font-size='8'>HD</text></svg>" class="example-image" alt="After">
+                            <div class="example-label">Yüksek Kalite</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="file-upload-area" onclick="triggerFileInput('clarity-upscaler')">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">Fotoğraf Ekle<br><small>Tıklayın veya sürükleyip bırakın</small></div>
+                    <img class="preview-image" id="preview-clarity-upscaler" style="display: none;">
+                </div>
+                <input type="file" id="file-clarity-upscaler" class="file-input" accept="image/*" onchange="handleFileSelect('clarity-upscaler', this)">
+                <button class="process-btn" onclick="processImage('clarity-upscaler', 'clarity-upscaler')" disabled>İşle</button>
+                <div class="result-area" id="result-clarity-upscaler"></div>
+            </div>
+
+            <!-- Product Shot -->
+            <div class="model-card">
+                <div class="model-title">📸 Ürün Fotoğrafı</div>
+                <div class="model-description">Profesyonel ürün fotoğrafları oluşturur ve e-ticaret için optimize eder</div>
+                
+                <div class="example-section">
+                    <div class="example-title">📋 Örnek Sonuç</div>
+                    <div class="example-images">
+                        <div>
+                            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23f5f5f5'/><rect x='30' y='25' width='20' height='30' fill='%23666'/><text x='40' y='70' text-anchor='middle' fill='%23333' font-size='7'>Ham</text></svg>" class="example-image" alt="Before">
+                            <div class="example-label">Ham Ürün</div>
+                        </div>
+                        <div class="example-arrow">→</div>
+                        <div>
+                            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><defs><linearGradient id='grad' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%23fff'/><stop offset='100%' stop-color='%23f0f0f0'/></linearGradient></defs><rect width='80' height='80' fill='url(%23grad)'/><rect x='30' y='25' width='20' height='30' fill='%23333' stroke='%23ccc'/><text x='40' y='70' text-anchor='middle' fill='%23333' font-size='6'>Profesyonel</text></svg>" class="example-image" alt="After">
+                            <div class="example-label">Profesyonel</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="file-upload-area" onclick="triggerFileInput('product-shot')">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">Fotoğraf Ekle<br><small>Tıklayın veya sürükleyip bırakın</small></div>
+                    <img class="preview-image" id="preview-product-shot" style="display: none;">
+                </div>
+                <input type="file" id="file-product-shot" class="file-input" accept="image/*" onchange="handleFileSelect('product-shot', this)">
+                <button class="process-btn" onclick="processImage('product-shot', 'product-shot')" disabled>İşle</button>
+                <div class="result-area" id="result-product-shot"></div>
+            </div>
+
+            <!-- Background Replace -->
+            <div class="model-card">
+                <div class="model-title">🌅 Arka Plan Değiştirme</div>
+                <div class="model-description">Arka planı yeni bir görüntü ile değiştirir ve doğal bir kompozisyon oluşturur</div>
+                
+                <div class="example-section">
+                    <div class="example-title">📋 Örnek Sonuç</div>
+                    <div class="example-images">
+                        <div>
+                            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' fill='%23e0e0e0'/><circle cx='40' cy='40' r='15' fill='%23333'/><text x='40' y='70' text-anchor='middle' fill='%23333' font-size='7'>Eski Arka Plan</text></svg>" class="example-image" alt="Before">
+                            <div class="example-label">Orijinal</div>
+                        </div>
+                        <div class="example-arrow">→</div>
+                        <div>
+                            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><defs><linearGradient id='sunset' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%23ff6b6b'/><stop offset='100%' stop-color='%23feca57'/></linearGradient></defs><rect width='80' height='80' fill='url(%23sunset)'/><circle cx='40' cy='40' r='15' fill='%23333'/><text x='40' y='70' text-anchor='middle' fill='white' font-size='6'>Yeni Arka Plan</text></svg>" class="example-image" alt="After">
+                            <div class="example-label">Yeni Arka Plan</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="file-upload-area" onclick="triggerFileInput('background-replace')">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">Fotoğraf Ekle<br><small>Tıklayın veya sürükleyip bırakın</small></div>
+                    <img class="preview-image" id="preview-background-replace" style="display: none;">
+                </div>
+                <input type="file" id="file-background-replace" class="file-input" accept="image/*" onchange="handleFileSelect('background-replace', this)">
+                <button class="process-btn" onclick="processImage('background/replace', 'background-replace')" disabled>İşle</button>
+                <div class="result-area" id="result-background-replace"></div>
+            </div>
+        </div>
+
+        <div class="settings">
+            <h3>⚙️ Webhook Ayarları</h3>
+            <input type="text" class="webhook-input" id="webhookUrl" 
+                   value="http://localhost:5678/webhook-test/falai-process" 
+                   placeholder="n8n Webhook URL'ini buraya girin">
+        </div>
+    </div>
+
+    <script>
+        // File input trigger
+        function triggerFileInput(modelId) {
+            document.getElementById(`file-${modelId}`).click();
+        }
+
+        // Handle file selection
+        function handleFileSelect(modelId, input) {
+            const file = input.files[0];
+            const uploadArea = input.parentElement.querySelector('.file-upload-area');
+            const button = input.parentElement.querySelector('.process-btn');
+            const preview = document.getElementById(`preview-${modelId}`);
+            
+            if (file) {
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+                
+                // Update UI
+                uploadArea.classList.add('has-file');
+                uploadArea.querySelector('.upload-text').innerHTML = `${file.name}<br><small>Dosya seçildi - değiştirmek için tıklayın</small>`;
+                button.disabled = false;
+            }
+        }
+
+        // Drag and drop functionality
+        document.querySelectorAll('.file-upload-area').forEach(area => {
+            area.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                area.classList.add('dragover');
+            });
+
+            area.addEventListener('dragleave', () => {
+                area.classList.remove('dragover');
+            });
+
+            area.addEventListener('drop', (e) => {
+                e.preventDefault();
+                area.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const modelId = area.onclick.toString().match(/triggerFileInput\\('([^']+)'\\)/)[1];
+                    const fileInput = document.getElementById(`file-${modelId}`);
+                    fileInput.files = files;
+                    handleFileSelect(modelId, fileInput);
+                }
+            });
+        });
+
+        // Process image
+        async function processImage(model, modelId) {
+            const webhookUrl = document.getElementById('webhookUrl').value;
+            const fileInput = document.getElementById(`file-${modelId}`);
+            const resultArea = document.getElementById(`result-${modelId}`);
+            const button = fileInput.parentElement.querySelector('.process-btn');
+            const previewImage = document.getElementById(`preview-${modelId}`);
+            
+            if (!fileInput.files[0]) {
+                showResult(resultArea, 'error', '❌ Lütfen önce bir dosya seçin!');
+                return;
+            }
+
+            if (!webhookUrl) {
+                showResult(resultArea, 'error', '❌ Webhook URL\'si gerekli!');
+                return;
+            }
+
+            // Show loading
+            button.disabled = true;
+            button.textContent = 'İşleniyor...';
+            showResult(resultArea, 'loading', 'Resim işleniyor, lütfen bekleyin...');
+
+            try {
+                // Prepare form data
+                const formData = new FormData();
+                formData.append('model', model);
+                formData.append('image', fileInput.files[0]);
+
+                // Send request
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                const originalImageSrc = previewImage.src; // Get the original image source
+
+                if (result.status === 'success') {
+                    showResult(resultArea, 'success', 'İşlem başarılı!', result.result_url, originalImageSrc);
+                } else if (result.status === 'polling') {
+                    showResult(resultArea, 'loading', 'İşlem devam ediyor, sonuç bekleniyor...');
+                    // In a real implementation, you'd poll for the result
+                } else {
+                    showResult(resultArea, 'error', `❌ Hata: ${result.error || 'Bilinmeyen hata'}`);
+                }
+            } catch (error) {
+                showResult(resultArea, 'error', `❌ Bağlantı hatası: ${error.message}`);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'İşle';
+            }
+        }
+
+        // Show result with enhanced display
+        function showResult(resultArea, type, message, imageUrl = null, originalImageSrc = null) {
+            resultArea.className = `result-area result-${type}`;
+            resultArea.style.display = 'block';
+            
+            let content = '';
+            if (type === 'loading') {
+                content = `<div class="spinner"></div>${message}`;
+            } else if (type === 'success' && imageUrl) {
+                content = `
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <strong>✅ ${message}</strong>
+                    </div>
+                    <div class="result-comparison">
+                        <div class="result-image-container">
+                            <img src="${originalImageSrc}" class="result-image" alt="Original image" style="opacity: 0.9;">
+                            <div class="result-label">Orijinal Resim</div>
+                        </div>
+                        <div class="result-arrow">→</div>
+                        <div class="result-image-container">
+                            <img src="${imageUrl}" class="result-image" alt="Processed image">
+                            <div class="result-label">İşlenmiş Sonuç</div>
+                        </div>
+                    </div>
+                    <div class="result-url">
+                        <strong>Sonuç URL:</strong><br>
+                        <a href="${imageUrl}" target="_blank" style="color: #007bff; text-decoration: none;">${imageUrl}</a>
+                    </div>`;
+            } else {
+                content = message;
+            }
+            
+            resultArea.innerHTML = content;
+            
+            // Smooth scroll to result
+            setTimeout(() => {
+                resultArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        // Initialize
+        console.log('🎨 Fal.ai Test Sitesi yüklendi!');
+        console.log('Webhook URL:', document.getElementById('webhookUrl').value);
+    </script>
+</body>
+</html>
